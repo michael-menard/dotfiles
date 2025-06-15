@@ -83,7 +83,6 @@ Please help me refactor this code to improve:
 3. **Performance** - Optimize for better efficiency
 4. **Type Safety** - Improve TypeScript usage
 5. **Best Practices** - Apply modern patterns and conventions
-6. **Minimal Effort** - only implement what is asked
 
 Please maintain the existing functionality while improving the code quality.
 
@@ -109,7 +108,6 @@ You are an AI assistant helping with TypeScript and React development. The codeb
 - **Testing**: Jest, React Testing Library, Playwright for E2E
 - **Build Tools**: Vite, TypeScript compiler
 - **Code Quality**: ESLint, Prettier, Husky for git hooks
-- **Minimal Effort**: only implement what is asked
 
 ## Code Style Guidelines
 
@@ -149,7 +147,6 @@ You are an AI assistant helping with TypeScript and React development. The codeb
 5. Explain complex logic with comments
 6. Follow the existing codebase patterns
 7. Provide refactoring suggestions when appropriate
-8. only implement what is asked
 
 ## Quality Checklist
 Before suggesting code, ensure it:
