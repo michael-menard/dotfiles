@@ -1,14 +1,12 @@
+![macOS](https://img.shields.io/badge/Platform-macOS-000?logo=apple)
+![License](https://img.shields.io/github/license/michael-menard/dotfiles)
+![Made With Love](https://img.shields.io/badge/Built%20with-%E2%9D%A4-red)
+
 # Modular Dotfiles Generator 🛠️
 
 A modular, TypeScript-focused macOS development environment generator that creates comprehensive dotfiles with client isolation, AI integration, and professional development tools.
 
 ## 🔥 TLDR
-
-![macOS](https://img.shields.io/badge/Platform-macOS-000?logo=apple)
-![License](https://img.shields.io/github/license/michael-menard/dotfiles)
-![Made With Love](https://img.shields.io/badge/Built%20with-%E2%9D%A4-red)
-
-> A professional-grade, **AI-enhanced**, **client-isolated** dotfiles system for macOS web developers.
 
 This repo sets up a complete development environment including:
 
