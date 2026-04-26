@@ -1,0 +1,16 @@
+# Ghostty Configuration
+# https://ghostty.org/docs/config
+
+# Font
+font-family = JetBrainsMono Nerd Font
+font-size = 14
+
+# Theme
+theme = dark:catppuccin-mocha,light:catppuccin-latte
+
+# Window
+window-decoration = false
+background-opacity = 0.95
+
+# Shell integration
+shell-integration = zsh

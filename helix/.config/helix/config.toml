@@ -1,0 +1,17 @@
+[editor]
+theme = "catppuccin_mocha"
+line-number = "relative"
+mouse = false
+auto-save = true
+completion-trigger-len = 2
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.file-picker]
+hidden = false
+
+[keys.normal]
+space.space = "file_picker"

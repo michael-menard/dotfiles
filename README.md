@@ -13,6 +13,8 @@ Clean Stow-managed dotfiles configuration for macOS.
 - **gh** - GitHub CLI configuration
 - **tmuxinator** - Tmux layouts (3-column claude workspace)
 - **starship** - Shell prompt configuration
+- **cmux** - AI agent terminal settings
+- **ghostty** - Terminal emulator config
 - **micro** - Terminal text editor configuration
 - **opencode** - AI code editor with OpenAI, Anthropic, OpenRouter, and Ollama support
 
@@ -35,9 +37,18 @@ cd ~/dotfiles
 ```
 
 ### 4. Stow all packages
+
+**Personal machine:**
 ```bash
 cd ~/dotfiles
 stow */
+```
+
+**Work machine** (skip AI tool configs):
+```bash
+cd ~/dotfiles
+stow asdf brew cmux gh ghostty git lazygit micro ssh starship tmuxinator zsh
+# Omit: opencode
 ```
 
 This creates symlinks from your home directory to the dotfiles repo:
@@ -46,8 +57,15 @@ This creates symlinks from your home directory to the dotfiles repo:
 - etc.
 
 ### 5. Install Homebrew packages
+
+**Personal machine:**
 ```bash
 brew bundle --file ~/Brewfile
+```
+
+**Work machine** (no AI tools):
+```bash
+brew bundle --file ~/dotfiles/brew/Brewfile.work
 ```
 
 ### 6. Install oh-my-zsh
@@ -109,6 +127,41 @@ ollama pull codellama:13b
 ```bash
 exec zsh
 ```
+
+## ⚠️ Manual Steps (Not Automated)
+
+These must be done by hand on a new machine — not covered by Brewfile or stow.
+
+### SSH Keys
+Copy private keys from old machine or generate new ones:
+```bash
+ssh-keygen -t ed25519 -C "your@email.com"
+# Then add public key to GitHub, etc.
+```
+
+### SOPS / age Key
+Copy `~/.config/sops/age/keys.txt` from old machine (back this up separately — losing it means losing access to encrypted secrets).
+
+### `.env` File
+Copy `~/.env` from old machine or recreate from `~/dotfiles/.env.example`.
+Contains: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `BRAVE_API_KEY`, etc.
+
+### Rectangle
+Window layout preferences are not stowed (stored in `~/Library/Preferences/com.knollsoft.Rectangle.plist`).
+Reconfigure manually after install — settings are minimal.
+
+### lazygit
+Config was lost during dotfiles migration (was in old `~/.dotfiles`). No stow package yet.
+After install, configure manually at `~/.config/lazygit/config.yml`, then add to stow package.
+
+### macOS System Preferences
+- Dock, Mission Control, keyboard repeat rate, trackpad settings, etc.
+- Not tracked anywhere — configure manually.
+
+### App Store Apps
+Apps installed via Mac App Store are not in the Brewfile. Reinstall manually.
+
+---
 
 ## 🔧 Managing Packages
 

@@ -1,14 +1,8 @@
 #############################################################
-# ~/.Brewfile - Software Installs for MacOS                 #
+# ~/dotfiles/brew/Brewfile.work                             #
 #                                                           #
-# List of packages to be installed / updated via Homebrew   #
-# Apps are sorted by category, and arranged alphabetically  #
-# Be sure to delete / comment out anything you do not need  #
-# Usage, run: $ brew bundle --global --file $HOME/.Brewfile #
-# Source GH repository: https://github.com/lissy93/Brewfile #
-# See brew docs for more info: https://docs.brew.sh/Manpage #
-#                                                           #
-# License: MIT © Alicia Sykes 2022 <https://aliciasykes.com>#
+# Work machine variant — AI tools removed.                  #
+# Usage: brew bundle --file ~/dotfiles/brew/Brewfile.work   #
 #############################################################
 
 # Options
@@ -55,7 +49,7 @@ brew 'mactop'         # macOS system monitor (Apple Silicon)
 brew 'speedtest-cli'  # Command line speed test utility
 
 # CLI Productivity Apps
-brew 'micro'          # Terminal text editor
+brew 'helix'          # Terminal text editor (modal, modern)
 brew 'rclone'         # Manage cloud storage
 brew 'task'           # Todo + task management
 
@@ -74,8 +68,6 @@ brew 'pv'             # Pipe viewer, with animation options
 
 # Development Apps
 cask 'boop'               # Text transformation tool
-cask 'claude-code'        # Claude Code CLI
-cask 'cmux'               # AI coding agent terminal (Ghostty-based)
 cask 'ghostty'            # Fast native terminal emulator
 cask 'postman'            # HTTP API testing app
 cask 'visual-studio-code' # Code editor
@@ -85,11 +77,11 @@ brew 'gcc'            # GNU C++ compilers
 brew 'pnpm'           # Fast Node.js package manager
 
 # DevOps
-cask 'docker-desktop' # Docker with GUI
+brew 'colima'         # Container runtime (open-source Docker Desktop alternative)
+brew 'docker'         # Docker CLI
+brew 'docker-compose' # Docker Compose
 
 # Development Utils
-brew 'awscli'         # AWS CLI
-brew 'aws-sam-cli'    # AWS SAM CLI for serverless development
 brew 'direnv'         # Directory-based environment variables
 brew 'gh'             # Interact with GitHub PRs, issues, repos
 brew 'git-extras'     # Extra git commands for common tasks
@@ -101,14 +93,9 @@ brew 'sops'           # Secrets management (pairs with age)
 # Shell
 brew 'starship'       # Shell prompt
 
-# AI Tools
+# Dev Utilities (non-AI)
 brew 'act'            # Run GitHub Actions locally
 brew 'glow'           # Render markdown in terminal
-brew 'llm'            # CLI for LLMs (OpenAI, Anthropic, Ollama, etc.)
-brew 'ollama'         # Run local AI models
-brew 'opencode'       # AI code editor
-brew 'uv'             # Fast Python package manager (for AI tooling)
-cask 'lm-studio'      # GUI for running and managing local models
 
 # Security Utilities
 cask 'gpg-suite'      # PGP encryption for emails and files
