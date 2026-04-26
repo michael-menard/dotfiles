@@ -86,6 +86,7 @@ brew 'direnv'         # Directory-based environment variables
 brew 'gh'             # Interact with GitHub PRs, issues, repos
 brew 'glab'           # GitLab CLI
 brew 'git-extras'     # Extra git commands for common tasks
+brew 'worktrunk'      # Git worktree manager for parallel agent workflows
 
 # Approved AI Tools
 cask 'kiro-cli'       # AI productivity tool (work-approved)
