@@ -132,6 +132,13 @@ exec zsh
 
 These must be done by hand on a new machine — not covered by Brewfile or stow.
 
+### Git Identity (Work Machine)
+Override the global gitconfig with your work email:
+```bash
+git config --global user.email "you@work.com"
+git config --global user.name "Your Name"
+```
+
 ### SSH Keys
 Copy private keys from old machine or generate new ones:
 ```bash
