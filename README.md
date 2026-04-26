@@ -47,8 +47,8 @@ stow */
 **Work machine** (skip AI tool configs):
 ```bash
 cd ~/dotfiles
-stow asdf brew cmux gh ghostty git lazygit micro ssh starship tmuxinator zsh
-# Omit: opencode
+stow brew gh ghostty git helix lazygit ssh starship tmuxinator zsh
+# Omit: asdf, cmux, opencode (mise replaces asdf on work)
 ```
 
 This creates symlinks from your home directory to the dotfiles repo:

@@ -14,6 +14,7 @@ cask_args appdir: '~/Applications', require_sha: true
 
 # CLI Essentials
 brew 'git'            # Version control
+brew 'mise'           # Polyglot runtime manager (asdf alternative)
 brew 'stow'           # Dotfiles symlink manager
 brew 'tmuxinator'     # Tmux session manager
 

@@ -93,6 +93,7 @@ brew 'aws-sam-cli'    # AWS SAM CLI for serverless development
 brew 'direnv'         # Directory-based environment variables
 brew 'gh'             # Interact with GitHub PRs, issues, repos
 brew 'git-extras'     # Extra git commands for common tasks
+brew 'worktrunk'      # Git worktree manager for parallel agent workflows
 
 # Secrets Management
 brew 'age'            # Modern encryption tool
