@@ -1,42 +1,246 @@
 # Dotfiles
 
-Stow-managed dotfiles configuration.
+Clean Stow-managed dotfiles configuration for macOS.
 
-## Packages
+## 📦 What's Included
 
-- **git** - Git configuration (.gitconfig, .gitignore_global)
+- **git** - Git configuration and global gitignore
 - **ssh** - SSH configuration
-- **zsh** - Modular zsh configuration (eza, mactop, ranger, lazygit aliases)
+- **zsh** - Modular zsh with custom aliases (eza, lazygit, mactop, ranger)
+- **asdf** - Tool version manager configuration
+- **brew** - Homebrew package list (Brewfile)
+- **lazygit** - Terminal git UI with custom theme and keybindings
+- **gh** - GitHub CLI configuration
+- **tmuxinator** - Tmux layouts (3-column claude workspace)
+- **starship** - Shell prompt configuration
+- **micro** - Terminal text editor configuration
+- **opencode** - AI code editor configuration
 
-## Additional Configs (in ~/.dotfiles/.config/)
+## 🚀 Fresh Machine Setup
 
-- **lazygit** - Lazygit configuration with custom theme and keybindings (see `~/.config/lazygit/README.md`)
-
-## Installation
-
-Install individual packages with stow:
-
+### 1. Install Homebrew
 ```bash
-cd ~/dotfiles
-stow git
-stow ssh
-stow zsh
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-Or install all packages:
+### 2. Install Stow
+```bash
+brew install stow
+```
 
+### 3. Clone dotfiles
+```bash
+git clone git@github.com:michael-menard/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+```
+
+### 4. Stow all packages
 ```bash
 cd ~/dotfiles
 stow */
 ```
 
-## Zsh Configuration
+This creates symlinks from your home directory to the dotfiles repo:
+- `~/.zshrc` → `~/dotfiles/zsh/.zshrc`
+- `~/.config/lazygit` → `~/dotfiles/lazygit/.config/lazygit`
+- etc.
 
-The zsh package uses a modular approach. After stowing, add this to your `~/.zshrc`:
-
+### 5. Install Homebrew packages
 ```bash
-# Load modular zsh config
-[[ -f ~/.zsh/loader.zsh ]] && source ~/.zsh/loader.zsh
+brew bundle --file ~/Brewfile
 ```
 
-See `zsh/README.md` for details on available aliases and configuration.
+### 6. Install oh-my-zsh
+```bash
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+```
+
+### 7. Install asdf plugins and tool versions
+```bash
+# Add plugins
+asdf plugin add nodejs
+asdf plugin add golang
+asdf plugin add python
+
+# Install versions from .tool-versions
+asdf install
+```
+
+### 8. Setup environment variables
+```bash
+cp ~/dotfiles/.env.example ~/.env
+```
+
+Edit `~/.env` and add your API keys:
+```bash
+# ~/.env
+BRAVE_API_KEY=your_actual_api_key_here
+ANTHROPIC_API_KEY=your_actual_api_key_here
+```
+
+Set secure permissions:
+```bash
+chmod 600 ~/.env
+```
+
+### 9. Reload shell
+```bash
+exec zsh
+```
+
+## 🔧 Managing Packages
+
+### Install a package
+```bash
+cd ~/dotfiles
+stow <package-name>
+```
+
+Example:
+```bash
+cd ~/dotfiles
+stow zsh
+```
+
+### Remove a package
+```bash
+cd ~/dotfiles
+stow -D <package-name>
+```
+
+### Reinstall all packages
+```bash
+cd ~/dotfiles
+stow -R */
+```
+
+### Check what would be stowed (dry run)
+```bash
+cd ~/dotfiles
+stow -nv <package-name>
+```
+
+## 📝 Making Changes
+
+### Edit a config file
+Just edit the file in the `~/dotfiles` directory. Changes are immediately reflected in your home directory because of the symlinks.
+
+```bash
+# Edit zsh config
+vim ~/dotfiles/zsh/.zshrc
+
+# Changes are immediately live because ~/.zshrc is a symlink
+```
+
+### Add a new config file
+1. Add the file to the appropriate package directory in `~/dotfiles`
+2. Restow the package: `cd ~/dotfiles && stow -R <package-name>`
+
+### Commit your changes
+```bash
+cd ~/dotfiles
+git add .
+git commit -m "feat: add new config"
+git push
+```
+
+## 🔒 Security Notes
+
+### Secrets Management
+- **Never** commit `.env` file to git
+- API keys and secrets go in `~/.env` (not tracked)
+- Use `.env.example` as a template
+- SOPS/age private keys should be backed up separately
+
+### SOPS Keys
+SOPS private keys are stored in `~/.config/sops/age/keys.txt` and are NOT tracked in this repo.
+
+On a new machine, either:
+- Copy your existing SOPS private key to the new machine
+- Generate a new age key: `age-keygen -o ~/.config/sops/age/keys.txt`
+
+### SSH Keys
+SSH keys in `~/.ssh/` are NOT included in this dotfiles repo. Only the SSH config is tracked.
+
+## 🛠️ Troubleshooting
+
+### Shell doesn't load
+```bash
+# Check for errors
+zsh -c "source ~/.zshrc"
+
+# Verify symlinks
+ls -la ~/.zshrc
+ls -la ~/.config
+```
+
+### Stow conflicts
+If stow complains about existing files:
+```bash
+# Remove conflicting file
+rm ~/.conflicting-file
+
+# Try stowing again
+cd ~/dotfiles && stow <package>
+```
+
+### Oh-my-zsh not found
+Install oh-my-zsh:
+```bash
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+```
+
+### asdf not found
+Install asdf via Homebrew:
+```bash
+brew install asdf
+```
+
+## 📂 Package Structure
+
+Each package follows this structure:
+```
+<package-name>/
+  <file-or-dir>     # Will be symlinked to ~/<file-or-dir>
+  .config/          # Will create ~/.config/<package-name>
+    <package-name>/
+      config-files
+```
+
+Example for lazygit:
+```
+lazygit/
+  .config/
+    lazygit/
+      config.yml
+```
+
+Results in: `~/.config/lazygit/config.yml` → `~/dotfiles/lazygit/.config/lazygit/config.yml`
+
+## 🎨 Customization
+
+### ZSH Aliases
+Custom aliases are in modular files under `zsh/.zsh/aliases/`:
+- `eza.zsh` - Enhanced ls replacement
+- `lazygit.zsh` - Git UI launcher
+- `mactop.zsh` - System monitor
+- `ranger.zsh` - File manager
+
+Add new alias files there and they'll be auto-loaded by `zsh/.zsh/loader.zsh`.
+
+### Starship Prompt
+Edit `starship/.config/starship.toml` to customize your shell prompt.
+
+### Lazygit Theme
+Edit `lazygit/.config/lazygit/config.yml` to customize lazygit appearance and keybindings.
+
+## 🔗 Links
+
+- [GNU Stow Manual](https://www.gnu.org/software/stow/manual/stow.html)
+- [Managing Dotfiles with Stow](https://alexpearce.me/2016/02/managing-dotfiles-with-stow/)
+- [Oh My Zsh](https://ohmyz.sh/)
+- [asdf Version Manager](https://asdf-vm.com/)
+
+## 📜 License
+
+MIT
