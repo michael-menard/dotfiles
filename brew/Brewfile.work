@@ -83,7 +83,6 @@ brew 'docker'         # Docker CLI
 brew 'docker-compose' # Docker Compose
 
 # Development Utils
-brew 'direnv'         # Directory-based environment variables
 brew 'gh'             # Interact with GitHub PRs, issues, repos
 brew 'glab'           # GitLab CLI
 brew 'git-extras'     # Extra git commands for common tasks
