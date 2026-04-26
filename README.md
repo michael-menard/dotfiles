@@ -132,6 +132,12 @@ exec zsh
 
 These must be done by hand on a new machine — not covered by Brewfile or stow.
 
+### Machine-Specific Shell Config
+Create `~/.zshrc.local` for anything specific to that machine (not tracked in git):
+```bash
+touch ~/.zshrc.local
+```
+
 ### Git Identity (Work Machine)
 Override the global gitconfig with your work email:
 ```bash
