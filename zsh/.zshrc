@@ -225,10 +225,25 @@ eval "$(direnv hook zsh)"
 
 # OpenCode model aliases
 alias oc='opencode'                                                    # Shortcut for opencode
+
+# OpenAI models (requires OPENAI_API_KEY in ~/.env)
+alias oc-4o='opencode --model openai/gpt-4o'                         # GPT-4o (best reasoning)
+alias oc-4o-mini='opencode --model openai/gpt-4o-mini'               # GPT-4o mini (fast, cheap)
+alias oc-o1='opencode --model openai/o1'                             # o1 (advanced reasoning)
+alias oc-o1-mini='opencode --model openai/o1-mini'                   # o1 mini (fast reasoning)
+
+# Anthropic models (requires ANTHROPIC_API_KEY in ~/.env)
+alias oc-sonnet='opencode --model anthropic/claude-sonnet-4'         # Claude Sonnet 4 (latest)
+alias oc-sonnet35='opencode --model anthropic/claude-sonnet-3.5'     # Claude Sonnet 3.5
+alias oc-haiku='opencode --model anthropic/claude-haiku-3.5'         # Claude Haiku 3.5 (fast)
+
+# OpenCode hosted models (free)
 alias oc-nano='opencode --model opencode/gpt-5-nano'                  # Fast free cloud model
 alias oc-pickle='opencode --model opencode/big-pickle'                # OpenCode's own model
 alias oc-minimax='opencode --model opencode/minimax-m2.5-free'        # MiniMax free model
 alias oc-trinity='opencode --model opencode/trinity-large-preview-free' # Trinity large model
+
+# Local Ollama models (requires Ollama running on localhost:11434)
 alias oc-qwen='opencode --model ollama/qwen-local'                    # Local Qwen 7B (fast)
 alias oc-qwen14='opencode --model ollama/qwen-14b'                    # Local Qwen 14B (better)
 alias oc-deepseek='opencode --model ollama/deepseek-coder-v2:16b'    # Local DeepSeek 16B

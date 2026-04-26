@@ -1,0 +1,9 @@
+{
+  "description": "OpenCode dependencies - copy to package.json and run 'bun install' or 'npm install'",
+  "dependencies": {
+    "@opencode-ai/plugin": "1.2.10",
+    "@ai-sdk/openai": "latest",
+    "@ai-sdk/anthropic": "latest",
+    "@ai-sdk/openai-compatible": "latest"
+  }
+}

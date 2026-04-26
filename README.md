@@ -14,7 +14,7 @@ Clean Stow-managed dotfiles configuration for macOS.
 - **tmuxinator** - Tmux layouts (3-column claude workspace)
 - **starship** - Shell prompt configuration
 - **micro** - Terminal text editor configuration
-- **opencode** - AI code editor configuration
+- **opencode** - AI code editor with OpenAI, Anthropic, and Ollama support
 
 ## 🚀 Fresh Machine Setup
 
@@ -75,7 +75,8 @@ Edit `~/.env` and add your API keys:
 ```bash
 # ~/.env
 BRAVE_API_KEY=your_actual_api_key_here
-ANTHROPIC_API_KEY=your_actual_api_key_here
+OPENAI_API_KEY=sk-your_openai_key_here
+ANTHROPIC_API_KEY=sk-ant-your_anthropic_key_here
 ```
 
 Set secure permissions:
@@ -83,7 +84,27 @@ Set secure permissions:
 chmod 600 ~/.env
 ```
 
-### 9. Reload shell
+### 9. Install OpenCode dependencies (optional)
+If you use OpenCode:
+```bash
+cd ~/.config/opencode
+bun install  # or npm install
+```
+
+This installs the AI SDK packages for OpenAI, Anthropic, and Ollama support.
+
+See [opencode/README.md](opencode/README.md) for detailed setup.
+
+### 10. Install Ollama models (optional)
+For local AI models via Ollama:
+```bash
+ollama pull qwen2.5-coder:7b
+ollama pull qwen2.5-coder:14b
+ollama pull deepseek-coder-v2:16b
+ollama pull codellama:13b
+```
+
+### 11. Reload shell
 ```bash
 exec zsh
 ```
@@ -233,6 +254,14 @@ Edit `starship/.config/starship.toml` to customize your shell prompt.
 
 ### Lazygit Theme
 Edit `lazygit/.config/lazygit/config.yml` to customize lazygit appearance and keybindings.
+
+### OpenCode
+Edit `opencode/.config/opencode/opencode.json` to:
+- Add/remove AI providers (OpenAI, Anthropic, Ollama)
+- Configure models
+- Adjust API endpoints
+
+See [opencode/README.md](opencode/README.md) for detailed configuration options.
 
 ## 🔗 Links
 
