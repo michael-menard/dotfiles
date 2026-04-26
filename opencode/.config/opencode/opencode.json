@@ -36,6 +36,40 @@
         }
       }
     },
+    "openrouter": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "OpenRouter",
+      "apiKey": "${OPENROUTER_API_KEY}",
+      "options": {
+        "baseURL": "https://openrouter.ai/api/v1"
+      },
+      "models": {
+        "gemini-flash": {
+          "name": "google/gemini-2.0-flash-001"
+        },
+        "gemini-pro": {
+          "name": "google/gemini-pro-1.5"
+        },
+        "deepseek-chat": {
+          "name": "deepseek/deepseek-chat"
+        },
+        "deepseek-coder": {
+          "name": "deepseek/deepseek-coder"
+        },
+        "qwen-coder": {
+          "name": "qwen/qwen-2.5-coder-32b-instruct"
+        },
+        "llama-3.3-70b": {
+          "name": "meta-llama/llama-3.3-70b-instruct"
+        },
+        "mistral-large": {
+          "name": "mistralai/mistral-large"
+        },
+        "claude-sonnet-or": {
+          "name": "anthropic/claude-3.5-sonnet"
+        }
+      }
+    },
     "ollama": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "Ollama",

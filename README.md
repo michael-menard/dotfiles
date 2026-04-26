@@ -14,7 +14,7 @@ Clean Stow-managed dotfiles configuration for macOS.
 - **tmuxinator** - Tmux layouts (3-column claude workspace)
 - **starship** - Shell prompt configuration
 - **micro** - Terminal text editor configuration
-- **opencode** - AI code editor with OpenAI, Anthropic, and Ollama support
+- **opencode** - AI code editor with OpenAI, Anthropic, OpenRouter, and Ollama support
 
 ## 🚀 Fresh Machine Setup
 
@@ -77,6 +77,7 @@ Edit `~/.env` and add your API keys:
 BRAVE_API_KEY=your_actual_api_key_here
 OPENAI_API_KEY=sk-your_openai_key_here
 ANTHROPIC_API_KEY=sk-ant-your_anthropic_key_here
+OPENROUTER_API_KEY=sk-or-your_openrouter_key_here
 ```
 
 Set secure permissions:

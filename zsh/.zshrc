@@ -237,6 +237,15 @@ alias oc-sonnet='opencode --model anthropic/claude-sonnet-4'         # Claude So
 alias oc-sonnet35='opencode --model anthropic/claude-sonnet-3.5'     # Claude Sonnet 3.5
 alias oc-haiku='opencode --model anthropic/claude-haiku-3.5'         # Claude Haiku 3.5 (fast)
 
+# OpenRouter models (requires OPENROUTER_API_KEY in ~/.env)
+alias oc-gemini='opencode --model openrouter/gemini-flash'           # Google Gemini 2.0 Flash (fast)
+alias oc-gemini-pro='opencode --model openrouter/gemini-pro'         # Google Gemini Pro 1.5
+alias oc-deepseek-chat='opencode --model openrouter/deepseek-chat'   # DeepSeek Chat (cloud)
+alias oc-deepseek-or='opencode --model openrouter/deepseek-coder'    # DeepSeek Coder (cloud)
+alias oc-qwen-or='opencode --model openrouter/qwen-coder'            # Qwen 2.5 Coder 32B (cloud)
+alias oc-llama='opencode --model openrouter/llama-3.3-70b'           # Meta Llama 3.3 70B
+alias oc-mistral='opencode --model openrouter/mistral-large'         # Mistral Large
+
 # OpenCode hosted models (free)
 alias oc-nano='opencode --model opencode/gpt-5-nano'                  # Fast free cloud model
 alias oc-pickle='opencode --model opencode/big-pickle'                # OpenCode's own model
