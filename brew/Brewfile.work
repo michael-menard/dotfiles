@@ -84,7 +84,11 @@ brew 'docker-compose' # Docker Compose
 # Development Utils
 brew 'direnv'         # Directory-based environment variables
 brew 'gh'             # Interact with GitHub PRs, issues, repos
+brew 'glab'           # GitLab CLI
 brew 'git-extras'     # Extra git commands for common tasks
+
+# Approved AI Tools
+cask 'kiro-cli'       # AI productivity tool (work-approved)
 
 # Secrets Management
 brew 'age'            # Modern encryption tool
