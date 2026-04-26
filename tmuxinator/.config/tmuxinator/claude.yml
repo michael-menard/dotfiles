@@ -1,0 +1,25 @@
+# ~/.config/tmuxinator/claude.yml
+# 3 columns: yazi file browser + 2 Claude Code instances
+# Each column split: main content (80%) on top, terminal (20%) on bottom
+#
+# Layout:
+# +---------------+---------------+---------------+
+# |    Yazi       |   Claude 1    |   Claude 2    |
+# |    (80%)      |    (80%)      |    (80%)      |
+# +---------------+---------------+---------------+
+# |   Terminal 1  |   Terminal 2  |   Terminal 3  |
+# |    (20%)      |    (20%)      |    (20%)      |
+# +---------------+---------------+---------------+
+
+name: claude
+root: ~/
+
+startup_window: main
+
+windows:
+  - main:
+      layout: even-horizontal
+      panes:
+        - tmux split-window -v -p 20 && yazi
+        - tmux split-window -v -p 20 && claude
+        - tmux split-window -v -p 20 && claude

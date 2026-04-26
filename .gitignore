@@ -1,0 +1,69 @@
+# =============================================================================
+# Dotfiles .gitignore
+# =============================================================================
+
+# Secrets and sensitive files
+.env
+.config/sops/age/keys.txt
+**/.ssh/id_*
+**/.ssh/*.pem
+**/.ssh/known_hosts
+
+# Tool installations (install via brew/asdf)
+.asdf/
+.oh-my-zsh/
+.npm/
+.vscode/
+.cargo/
+.rustup/
+
+# Application caches and runtime data
+.config/configstore/
+.config/simple-update-notifier/
+.config/uv/
+.config/cagent/
+.config/iterm2/
+.config/github-copilot/versions.json
+micro/.config/micro/backups/
+micro/.config/micro/buffers/
+micro/.config/micro/plug/
+
+# Node modules and dependencies
+**/node_modules/
+**/.pnpm-store/
+**/bun.lockb
+.config/opencode/node_modules/
+
+# Build artifacts
+**/dist/
+**/build/
+**/.next/
+**/.turbo/
+
+# Backups
+*.backup
+*.bak
+*~
+.*.swp
+.*.swo
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
