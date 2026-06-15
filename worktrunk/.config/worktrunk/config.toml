@@ -1,0 +1,18 @@
+# Worktrunk user config — personal preferences across all projects.
+# Docs: wt config show
+
+# Generate commit messages & `wt list` branch summaries via Claude Code.
+# Runs a headless, tool-less Haiku call — fast and cheap, no session state.
+[commit.generation]
+command = "CLAUDECODE= MAX_THINKING_TOKENS=0 claude -p --no-session-persistence --model=haiku --tools='' --disable-slash-commands --setting-sources='' --system-prompt=''"
+
+# Per-project overrides. `commit` belongs in user config (ignored in project config),
+# so the LEGO monorepo's commit convention is steered from here.
+[projects."github.com/CodeFika/monorepo"]
+# Standard worktree location: in-repo under .worktrees/ (gitignored; tooling-ignored
+# in eslint/prettier/knip). Convention: docs/branch-naming.md#worktree-location.
+worktree-path = "{{ repo_path }}/.worktrees/{{ branch | sanitize }}"
+commit.generation.template-append = """
+- Use Conventional Commits: feat:, fix:, docs:, refactor:, chore:, test:
+- Subject under 50 chars, imperative mood
+"""
