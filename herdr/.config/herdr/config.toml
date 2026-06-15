@@ -1,0 +1,53 @@
+# herdr configuration — ~/.config/herdr/config.toml
+# Reload without restart:  herdr server reload-config
+
+# First-run setup already completed.
+onboarding = false
+
+[theme]
+# Warm earth tones to match the Dark Academia aesthetic.
+name = "gruvbox"
+
+[keys]
+# Prefix key to enter prefix mode (default: ctrl+b).
+prefix = "ctrl+space"
+
+# Disable herdr's native worktree create. It does a bare `git worktree add` and
+# skips the wt pipeline (copy-ignored, pnpm install, turbo build, draft PR,
+# herdr-space hook). prefix+shift+g is rebound below to route through `wt` instead.
+new_worktree = ""
+
+# prefix+shift+g -> open wt's worktree picker (create-if-needed) in a new TAB
+# (via wt-new-tab.sh, since herdr command bindings have no native "tab" type).
+# Creation runs the full wt pipeline; the wt `herdr-space` post-start hook spawns
+# the matching herdr workspace. The picker tab self-closes when wt exits.
+[[keys.command]]
+key = "prefix+shift+g"
+command = "/Users/michaelmenard/.config/herdr/wt-new-tab.sh"
+type = "shell"
+
+[ui]
+# Show detected agent names in split pane borders.
+show_agent_labels_on_pane_borders = true
+
+# Background notifications: alert when an agent finishes or needs input.
+# herdr suppresses these for the tab you're currently looking at.
+agent_panel_scope = "all"
+[ui.toast]
+delivery = "herdr"
+
+[ui.sound]
+# All notification sounds off (using terminal popups instead).
+enabled = false
+
+[session]
+# Resume Claude Code (and other supported agent) panes into their native
+# conversation sessions after a herdr server restart. Added on Claude's
+# recommendation; set false to revert to start-fresh-on-restart.
+resume_agents_on_restore = true
+
+[experimental]
+pane_history = true
+# macOS: temporarily switch to an ASCII keyboard layout in prefix mode so
+# prefix commands register even with a CJK IME active.
+switch_ascii_input_source_in_prefix = true
