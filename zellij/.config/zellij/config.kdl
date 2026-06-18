@@ -1,0 +1,56 @@
+// ~/.config/zellij/config.kdl
+// Managed setup: tamed keybinds + theme + UI.  Edit freely; zellij hot-reloads on save.
+
+theme "catppuccin-mocha"
+
+// ── UI / appearance ───────────────────────────────────────────────
+pane_frames true                 // borders around panes (shows pane title)
+ui {
+    pane_frames {
+        rounded_corners true
+        hide_session_name false
+    }
+}
+simplified_ui false
+default_layout "compact"         // slim top bar instead of the big default
+copy_on_select true
+copy_command "pbcopy"            // macOS system clipboard
+scrollback_editor "/usr/bin/vi" // Edit-scrollback opens here (change to nvim if you like)
+
+// ── Session behavior: attach-or-create ────────────────────────────
+// `zellij attach -c main` reuses session "main" if alive, else creates it.
+// The `zj` alias added to ~/.zshrc gives you that one-liner.
+session_serialization true       // remember layout/panes across restarts
+pane_viewport_serialization true
+
+// ── Tamed keybinds ────────────────────────────────────────────────
+// Problem: zellij's defaults grab Ctrl keys the shell needs.
+// Fix: free the worst offenders so they pass through to your shell,
+// and use the collision-free Alt-* shortcuts (active in normal mode) instead.
+//
+//   Alt h/j/k/l ........ move focus between panes
+//   Alt n .............. new pane
+//   Alt = / Alt - ...... grow / shrink focused pane
+//   Alt [ / Alt ] ...... cycle layouts
+//   Alt f .............. toggle floating panes
+//
+// Mode switches you keep:
+//   Ctrl g ... lock mode (pass ALL keys through; Ctrl g again to unlock)
+//   Ctrl q ... quit zellij
+//   Ctrl t ... tab mode    Ctrl o ... session mode
+//
+keybinds {
+    // Free these for the shell / editors / fzf:
+    unbind "Ctrl s"   // was: enter scroll-search mode  (Ctrl-s freezes terminals)
+    unbind "Ctrl n"   // was: enter resize mode         (use Alt = / Alt -)
+    unbind "Ctrl h"   // was: enter move mode           (use Alt h/j/k/l)
+    unbind "Ctrl p"   // was: enter pane mode           (frees shell/vim Ctrl-p)
+
+    // Re-add a clean way into scroll/search mode without the Ctrl-s collision:
+    normal {
+        bind "Alt s" { SwitchToMode "Scroll"; }
+    }
+    shared_except "locked" {
+        bind "Alt s" { SwitchToMode "Scroll"; }
+    }
+}

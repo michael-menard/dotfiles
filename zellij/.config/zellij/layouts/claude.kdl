@@ -1,0 +1,44 @@
+// ~/.config/zellij/layouts/claude.kdl
+// Converted from tmuxinator ~/.config/tmuxinator/claude.yml
+// Launch with:  zellij --layout claude   (alias: zjclaude)
+//
+// 3 columns, each split into main content (80%) over a terminal (20%):
+// +---------------+---------------+---------------+
+// |    Yazi       |   Claude 1    |   Claude 2    |  80%
+// +---------------+---------------+---------------+
+// |   Terminal    |   Terminal    |   Terminal    |  20%
+// +---------------+---------------+---------------+
+
+layout {
+    cwd "/Users/michaelmenard"        // tmuxinator root: ~/
+
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+
+    tab name="claude" focus=true {
+        pane split_direction="vertical" {
+            // ── Column 1: yazi ──
+            pane split_direction="horizontal" {
+                pane size="80%" name="yazi"     command="yazi"
+                pane size="20%" name="terminal"
+            }
+            // ── Column 2: Claude Code ──
+            pane split_direction="horizontal" {
+                pane size="80%" name="claude-1"  command="claude"
+                pane size="20%" name="terminal"
+            }
+            // ── Column 3: Claude Code ──
+            pane split_direction="horizontal" {
+                pane size="80%" name="claude-2"  command="claude"
+                pane size="20%" name="terminal"
+            }
+        }
+    }
+}

@@ -150,3 +150,42 @@ fi
 # Machine-Specific Overrides
 # =============================================================================
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/michaelmenard/.docker/completions $fpath)
+autoload -Uz compinit
+compinit
+# End of Docker CLI completions
+
+# herdr: kill the tab (klt) / space (kls) you're currently focused in
+klt() {
+  local tab
+  tab=$(herdr workspace list | python3 -c 'import sys,json
+w=next((x for x in json.load(sys.stdin)["result"]["workspaces"] if x["focused"]), None)
+print(w["active_tab_id"]) if w else exit(1)') || { echo "klt: no focused workspace"; return 1; }
+  herdr tab close "$tab"
+}
+
+kls() {
+  local ws
+  ws=$(herdr workspace list | python3 -c 'import sys,json
+w=next((x for x in json.load(sys.stdin)["result"]["workspaces"] if x["focused"]), None)
+print(w["workspace_id"]) if w else exit(1)') || { echo "kls: no focused workspace"; return 1; }
+  herdr workspace close "$ws"
+}
+
+# herdr: kill the agent (kla) = close the currently focused pane
+kla() {
+  local pane
+  pane=$(herdr pane list | python3 -c 'import sys,json
+p=next((x for x in json.load(sys.stdin)["result"]["panes"] if x["focused"]), None)
+print(p["pane_id"]) if p else exit(1)') || { echo "kla: no focused pane"; return 1; }
+  herdr pane close "$pane"
+}
+
+# ── zellij ───────────────────────────────────────────────
+# Attach to session "main" if it exists, otherwise create it.
+alias zj='zellij attach -c main'
+# Launch the dev layout in a fresh session:
+alias zjdev='zellij --layout dev'
+# Claude 3-column workspace (converted from tmuxinator):
+alias zjclaude='zellij --layout claude'
