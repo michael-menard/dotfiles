@@ -52,5 +52,18 @@ keybinds {
     }
     shared_except "locked" {
         bind "Alt s" { SwitchToMode "Scroll"; }
+
+        // Alt i ... Initiative viewer modal (floating fzf picker + tree preview).
+        bind "Alt i" {
+            Run "/Users/michaelmenard/.config/gh/initiative-modal.sh" {
+                floating true
+                close_on_exit true
+                name "Initiatives"
+                width "86%"
+                height "86%"
+                x "7%"
+                y "7%"
+            }
+        }
     }
 }
