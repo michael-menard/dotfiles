@@ -44,7 +44,7 @@ keybinds {
     unbind "Ctrl s"   // was: enter scroll-search mode  (Ctrl-s freezes terminals)
     unbind "Ctrl n"   // was: enter resize mode         (use Alt = / Alt -)
     unbind "Ctrl h"   // was: enter move mode           (use Alt h/j/k/l)
-    unbind "Ctrl p"   // was: enter pane mode           (frees shell/vim Ctrl-p)
+    // Ctrl p restored — native pane mode (Ctrl p → r/d/x/n/f). Alt didn't pass through this terminal.
 
     // Re-add a clean way into scroll/search mode without the Ctrl-s collision:
     normal {
@@ -64,6 +64,19 @@ keybinds {
                 x "7%"
                 y "7%"
             }
+        }
+    }
+    // Ctrl p → ? ... floating zellij keybind cheat sheet (Ctrl entry passes through reliably).
+    pane {
+        bind "?" {
+            Run "bash" "/Users/michaelmenard/.config/zellij/cheatsheet.sh" {
+                floating true
+                close_on_exit true
+                name "Zellij Cheatsheet"
+                width "80"
+                height "40"
+            }
+            SwitchToMode "Normal"
         }
     }
 }
