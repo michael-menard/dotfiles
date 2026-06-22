@@ -2,8 +2,14 @@
 # Zellij quick-reference cheat sheet (meant to run in a floating pane).
 # Reflects this machine's config: Ctrl-p pane-mode is unbound; pane actions
 # are rebound to direct Alt keys (see config.kdl shared_except block).
+#
+# --no-wait: print and exit immediately (used by menu.sh's fzf preview).
+#            Default: clear the screen and wait for a keypress before closing.
 
-clear
+wait=1
+[ "${1:-}" = "--no-wait" ] && wait=0
+
+[ "$wait" = 1 ] && clear
 cyan=$'\e[36m'; bold=$'\e[1m'; dim=$'\e[2m'; grn=$'\e[32m'; yel=$'\e[33m'; rst=$'\e[0m'
 
 cat <<EOF
@@ -38,4 +44,5 @@ cat <<EOF
 
 EOF
 
-read -rsn1 _
+[ "$wait" = 1 ] && read -rsn1 _
+exit 0

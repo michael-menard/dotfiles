@@ -66,15 +66,18 @@ keybinds {
             }
         }
     }
-    // Ctrl p → ? ... floating zellij keybind cheat sheet (Ctrl entry passes through reliably).
+    // Ctrl p → ? ... floating menu: zellij commands · roadmap · workflow commands.
+    // (Ctrl entry passes through reliably.) The menu routes to each view via fzf.
     pane {
         bind "?" {
-            Run "bash" "/Users/michaelmenard/.config/zellij/cheatsheet.sh" {
+            Run "bash" "/Users/michaelmenard/.config/zellij/menu.sh" {
                 floating true
                 close_on_exit true
-                name "Zellij Cheatsheet"
-                width "80"
-                height "40"
+                name "Menu"
+                width "80%"
+                height "70%"
+                x "10%"
+                y "12%"
             }
             SwitchToMode "Normal"
         }
