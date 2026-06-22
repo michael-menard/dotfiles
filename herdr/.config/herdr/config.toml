@@ -12,19 +12,12 @@ name = "gruvbox"
 # Prefix key to enter prefix mode (default: ctrl+b).
 prefix = "ctrl+space"
 
-# Disable herdr's native worktree create. It does a bare `git worktree add` and
-# skips the wt pipeline (copy-ignored, pnpm install, turbo build, draft PR,
-# herdr-space hook). prefix+shift+g is rebound below to route through `wt` instead.
+# Disable herdr's native worktree create (a bare `git worktree add` that skips the
+# project's worktree pipeline). Worktrees are created via `wt` / `epic-start`, not
+# herdr; keeping this empty stops a stray prefix+shift+g from making a half-set-up
+# worktree. (The prefix+shift+g -> wt-new-tab.sh routing binding was removed — the
+# wt<->herdr integration is retired now that zellij is the terminal driver.)
 new_worktree = ""
-
-# prefix+shift+g -> open wt's worktree picker (create-if-needed) in a new TAB
-# (via wt-new-tab.sh, since herdr command bindings have no native "tab" type).
-# Creation runs the full wt pipeline; the wt `herdr-space` post-start hook spawns
-# the matching herdr workspace. The picker tab self-closes when wt exits.
-[[keys.command]]
-key = "prefix+shift+g"
-command = "/Users/michaelmenard/.config/herdr/wt-new-tab.sh"
-type = "shell"
 
 [ui]
 # Show detected agent names in split pane borders.
