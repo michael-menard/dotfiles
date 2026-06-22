@@ -74,10 +74,10 @@ keybinds {
                 floating true
                 close_on_exit true
                 name "Menu"
-                width "80%"
-                height "70%"
-                x "10%"
-                y "12%"
+                width "90%"
+                height "88%"
+                x "5%"
+                y "6%"
             }
             SwitchToMode "Normal"
         }
