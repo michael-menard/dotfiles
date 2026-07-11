@@ -85,6 +85,46 @@ if command -v wt &>/dev/null; then
   eval "$(command wt config shell init zsh)"
 fi
 
+# `wt <story-number>` shortcut: cd into the monorepo primary checkout, create the
+# feat/<n>-auto worktree, and launch Claude Code in auto-accept-edits mode. Any other
+# `wt ...` invocation passes straight through to worktrunk's real function untouched.
+if typeset -f wt >/dev/null; then
+  functions[_wt_orig]=$functions[wt]
+  wt() {
+    if [[ ( $# -eq 1 || $# -eq 2 ) && "$1" == <-> ]]; then
+      builtin cd ~/Development/Monorepo || return
+      local branch="feat/$1-auto"
+      local prompt="${2:-implement $1}"
+      # If a worktree for the branch already exists, cd straight into it and
+      # launch Claude there; otherwise let worktrunk create it (`switch --create`).
+      local wt_path
+      wt_path=$(git -C ~/Development/Monorepo worktree list --porcelain 2>/dev/null \
+        | awk -v b="refs/heads/$branch" '/^worktree /{p=$2} $0=="branch "b{print p; exit}')
+      if [[ -n "$wt_path" ]]; then
+        echo "wt: worktree for $branch already exists — launching Claude in $wt_path" >&2
+        builtin cd "$wt_path" || return
+        claude --permission-mode acceptEdits "$prompt"
+      else
+        _wt_orig switch --create "$branch" -x claude -- \
+          --permission-mode acceptEdits "$prompt"
+      fi
+    else
+      _wt_orig "$@"
+    fi
+  }
+
+  # `impl <story-number> [prompt]` — dedicated alias for the `wt <n>` story flow:
+  # create the feat/<n>-auto worktree and launch Claude in auto-accept-edits mode.
+  impl() {
+    if [[ ( $# -eq 1 || $# -eq 2 ) && "$1" == <-> ]]; then
+      wt "$@"
+    else
+      echo "usage: impl <story-number> [prompt]" >&2
+      return 2
+    fi
+  }
+fi
+
 # =============================================================================
 # Claude Code (personal machine only)
 # =============================================================================
