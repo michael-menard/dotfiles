@@ -2,14 +2,14 @@
 # https://ghostty.org/docs/config
 
 # Font
-font-family = JetBrainsMono Nerd Font
+font-family = JetBrainsMono Nerd Font Mono
 font-size = 14
 
 # Theme
-theme = dark:catppuccin-mocha,light:catppuccin-latte
+theme = dark:Catppuccin Mocha,light:Catppuccin Latte
 
 # Window
-window-decoration = false
+window-decoration = true
 background-opacity = 0.95
 
 # Shell integration
