@@ -93,8 +93,22 @@ if typeset -f wt >/dev/null; then
   wt() {
     if [[ ( $# -eq 1 || $# -eq 2 ) && "$1" == <-> ]]; then
       builtin cd ~/Development/Monorepo || return
+      # Start from a pristine main: if stray uncommitted (tracked) changes are
+      # sitting on main in the primary checkout, stash them aside — main is a
+      # place you should never be editing. Nothing is lost (git stash pop to
+      # restore); the precmd nag would have been flagging them already.
+      if [[ "$(git symbolic-ref --quiet --short HEAD 2>/dev/null)" == "main" ]] \
+         && ! git diff --quiet HEAD 2>/dev/null; then
+        git stash push --quiet -m "impl-autostash-$1" \
+          && echo "wt: primary main was dirty — stashed tracked changes to 'impl-autostash-$1' (restore: git stash pop)" >&2
+      fi
       local branch="feat/$1-auto"
       local prompt="${2:-implement $1}"
+      # Drive the story to done inside a Ralph loop rather than a single pass:
+      # implement, then run /pr (the gated exit), and only emit the completion
+      # promise once /pr succeeds. Hard cap at 15 iterations so a promise that
+      # never fires can't loop forever.
+      local ralph_cmd="/ralph-loop:ralph-loop \"$prompt, then run /pr (the gated exit); emit <promise>STORY COMPLETE</promise> only once /pr succeeds and the PR is marked ready.\" --completion-promise \"STORY COMPLETE\" --max-iterations 15"
       # If a worktree for the branch already exists, cd straight into it and
       # launch Claude there; otherwise let worktrunk create it (`switch --create`).
       local wt_path
@@ -103,10 +117,31 @@ if typeset -f wt >/dev/null; then
       if [[ -n "$wt_path" ]]; then
         echo "wt: worktree for $branch already exists — launching Claude in $wt_path" >&2
         builtin cd "$wt_path" || return
-        claude --permission-mode acceptEdits "$prompt"
+        # wt's `freshen` pre-start hook only rebases at CREATION, so a long-lived
+        # worktree silently drifts as origin/main moves on. Re-freshen here too, but
+        # FAST-FORWARD ONLY — advance the branch only when it has no commits of its
+        # own ahead of origin/main. The moment the branch carries unmerged work,
+        # catching up means a rebase that rewrites YOUR commits (and, if pushed, a
+        # force-push), so we never touch it — just warn and let you rebase yourself.
+        # A fast-forward needs no rewrite and no force-push; it also refuses (touches
+        # nothing) if uncommitted changes would be clobbered.
+        git fetch origin main --quiet 2>/dev/null
+        local behind ahead
+        behind=$(git rev-list --count HEAD..origin/main 2>/dev/null)
+        ahead=$(git rev-list --count origin/main..HEAD 2>/dev/null)
+        if [[ "$behind" -gt 0 ]]; then
+          if [[ "$ahead" -gt 0 ]]; then
+            echo "wt: ⚠ $branch is $behind behind / $ahead ahead of origin/main (unmerged work) — run 'git rebase origin/main' yourself to freshen" >&2
+          elif git merge --ff-only origin/main --quiet; then
+            echo "wt: fast-forwarded $branch to origin/main ($behind commit(s))" >&2
+          else
+            echo "wt: ⚠ couldn't fast-forward $branch (uncommitted changes) — commit/stash, then 'git merge --ff-only origin/main'" >&2
+          fi
+        fi
+        claude --permission-mode bypassPermissions "$ralph_cmd"
       else
         _wt_orig switch --create "$branch" -x claude -- \
-          --permission-mode acceptEdits "$prompt"
+          --permission-mode bypassPermissions "$ralph_cmd"
       fi
     else
       _wt_orig "$@"
@@ -124,6 +159,25 @@ if typeset -f wt >/dev/null; then
     fi
   }
 fi
+
+# Nag whenever the PRIMARY Monorepo checkout is on `main` with a dirty tree — main
+# is the shared HEAD every root pane sees and should stay pristine, so catch stray
+# uncommitted edits before they compound. Cheap: bail unless PWD is inside the
+# primary path, then one `git rev-parse` to exclude the linked worktrees that live
+# under it (they're never on `main`). `impl`/`wt` auto-stashes these when it starts
+# a story; this is the continuous reminder in between.
+_monorepo_main_dirty_warn() {
+  [[ "$PWD" == ~/Development/Monorepo || "$PWD" == ~/Development/Monorepo/* ]] || return
+  [[ "$(git rev-parse --show-toplevel 2>/dev/null)" == ~/Development/Monorepo ]] || return
+  [[ "$(git symbolic-ref --quiet --short HEAD 2>/dev/null)" == "main" ]] || return
+  git diff --quiet HEAD 2>/dev/null && return
+  local n
+  n=$(git diff --name-only HEAD 2>/dev/null | grep -c .)
+  echo "⚠ main is DIRTY in the primary checkout ($n tracked file(s)) — stash or restore:" >&2
+  git status --short --untracked-files=no 2>/dev/null | sed 's/^/   /' >&2
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _monorepo_main_dirty_warn
 
 # =============================================================================
 # Claude Code (personal machine only)
@@ -229,3 +283,9 @@ alias zj='zellij attach -c main'
 alias zjdev='zellij --layout dev'
 # Claude 3-column workspace (converted from tmuxinator):
 alias zjclaude='zellij --layout claude'
+
+# Pi
+export PATH="/Users/michaelmenard/.local/share/mise/installs/node/22.23.1/bin:$PATH"
+
+# wrkr: run the autonomous LangGraph dev-loop supervisor in work-pane sessions
+export WRKR_AGENT=devloop
