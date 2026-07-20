@@ -1,0 +1,35 @@
+{
+  // Category-based model routing
+  "categories": {
+    "ultrabrain": { "model": "ollama-cloud/kimi-k2-thinking" },
+    "deep": { "model": "ollama-cloud/kimi-k2-thinking" },
+    "visual-engineering": { "model": "ollama-cloud/qwen3-coder-next" },
+    "quick": { "model": "ollama-cloud/ministral-3:8b" }
+  },
+
+  // Per-agent model overrides
+  "agents": {
+    // Orchestrators
+    "sisyphus": { "model": "ollama-cloud/kimi-k2.5" },
+    "atlas": { "model": "ollama-cloud/ministral-3:8b" },
+
+    // Planning — deep reasoning
+    "prometheus": { "model": "ollama-cloud/kimi-k2-thinking" },
+    "metis": { "model": "ollama-cloud/kimi-k2-thinking" },
+    "momus": { "model": "ollama-cloud/kimi-k2-thinking" },
+
+    // Workers — code generation
+    "hephaestus": { "model": "ollama-cloud/qwen3-coder-next" },
+
+    // Specialists
+    "oracle": { "model": "ollama-cloud/cogito-2.1:671b" },
+    "librarian": { "model": "ollama-cloud/ministral-3:8b" },
+    "explore": { "model": "ollama-cloud/ministral-3:8b" }
+  },
+
+  // Concurrency limits
+  "background_task": {
+    "defaultConcurrency": 2,
+    "providerConcurrency": { "ollama": 4, "ollama-cloud": 3 }
+  }
+}
