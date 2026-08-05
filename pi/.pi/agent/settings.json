@@ -1,0 +1,27 @@
+{
+  "lastChangelogVersion": "0.83.0",
+  "theme": "dark",
+  "packages": [
+    "npm:pi-web-access",
+    "npm:pi-mcp-adapter",
+    "npm:context-mode",
+    "npm:@juicesharp/rpiv-todo",
+    "npm:@tmustier/pi-ralph-wiggum",
+    "npm:pi-ollama-cloud-provider",
+    "npm:pi-subagents"
+  ],
+  "defaultProvider": "ollama-cloud",
+  "defaultModel": "glm-5.2",
+  "defaultThinkingLevel": "medium",
+  "hideThinkingBlock": true,
+  "defaultProjectTrust": "always",
+  "skills": [
+    "~/.claude/skills"
+  ],
+  "agents": [
+    "~/.claude/agents"
+  ],
+  "extensions": [
+    "~/.pi/extensions/ghostty-tab-notify.ts"
+  ]
+}
