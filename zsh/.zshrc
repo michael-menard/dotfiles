@@ -86,7 +86,7 @@ if command -v wt &>/dev/null; then
 fi
 
 # `wt <story-number>` shortcut: cd into the monorepo primary checkout, create the
-# feat/<n>-auto worktree, and launch opencode in non-interactive mode against the
+# feat/<n> worktree, and launch opencode in non-interactive mode against the
 # Ralph RLM supervisor agent to implement the story. Any other `wt ...` invocation
 # passes straight through to worktrunk's real function untouched.
 if typeset -f wt >/dev/null; then
@@ -105,7 +105,7 @@ if typeset -f wt >/dev/null; then
         git stash push --quiet -m "impl-autostash-$1" \
           && echo "wt: primary main was dirty — stashed tracked changes to 'impl-autostash-$1' (restore: git stash pop)" >&2
       fi
-      local branch="feat/$1-auto"
+      local branch="feat/$1"
       local prompt="${2:-implement $1}"
       # Two phases in one goal: (1) implement → /pr inside the Ralph loop
       # (implementation is iterative), then (2) once the PR is READY, shepherd it to
@@ -119,12 +119,13 @@ if typeset -f wt >/dev/null; then
       # development (verify.command = pnpm test:gate is the stop condition).
       # Adopt a worktree already cut for this ISSUE NUMBER. groom freezes the story's
       # `.feature` on `feat/<n>-<slug>` (and epic-start uses the same `<type>/<n>-<slug>`),
-      # so match ANY `<type>/<n>-<slug>` worktree by number and cd into it — inheriting the
-      # frozen `.feature` — instead of fresh-cutting `feat/<n>-auto` and dropping the spec.
-      # No match ⇒ create the `feat/<n>-auto` fallback below (an ungroomed story).
+      # so match ANY `<type>/<n>`-family worktree by number — `<n>-<slug>` (groomed) OR a
+      # bare `<n>` (the fallback below) — and cd into it, inheriting the frozen `.feature`
+      # when present, instead of fresh-cutting and dropping the spec.
+      # No match ⇒ create the bare `feat/<n>` fallback below (an ungroomed story).
       local wt_path
       wt_path=$(git -C ~/Development/Monorepo worktree list --porcelain 2>/dev/null \
-        | awk -v n="$1" '/^worktree /{p=$2} /^branch refs\/heads\//{b=$2; sub("refs/heads/[^/]+/","",b); if (b ~ ("^" n "-")) {print p; exit}}')
+        | awk -v n="$1" '/^worktree /{p=$2} /^branch refs\/heads\//{b=$2; sub("refs/heads/[^/]+/","",b); if (b ~ ("^" n "($|-)")) {print p; exit}}')
       if [[ -n "$wt_path" ]]; then
         echo "wt: found worktree for #$1 — launching pi in $wt_path" >&2
         builtin cd "$wt_path" || return
@@ -159,7 +160,7 @@ if typeset -f wt >/dev/null; then
   }
 
   # `impl <story-number> [prompt]` — dedicated alias for the `wt <n>` story flow:
-  # create the feat/<n>-auto worktree and launch pi with the story as its initial
+  # create the feat/<n> worktree and launch pi with the story as its initial
   # message (assistant may start a Ralph loop for iterative implementation).
   impl() {
     if [[ ( $# -eq 1 || $# -eq 2 ) && "$1" == <-> ]]; then
