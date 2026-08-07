@@ -86,12 +86,15 @@ if command -v wt &>/dev/null; then
 fi
 
 # `wt <story-number>` shortcut: cd into the monorepo primary checkout, create the
-# feat/<n>-auto worktree, and launch Claude Code in auto-accept-edits mode. Any other
-# `wt ...` invocation passes straight through to worktrunk's real function untouched.
+# feat/<n> worktree, and launch opencode in non-interactive mode against the
+# Ralph RLM supervisor agent to implement the story. Any other `wt ...` invocation
+# passes straight through to worktrunk's real function untouched.
 if typeset -f wt >/dev/null; then
   functions[_wt_orig]=$functions[wt]
   wt() {
     if [[ ( $# -eq 1 || $# -eq 2 ) && "$1" == <-> ]]; then
+      # Rename the Ghostty tab to the story number so it's identifiable at a glance.
+      printf '\033]2;wt %s\007' "$1"
       builtin cd ~/Development/Monorepo || return
       # Start from a pristine main: if stray uncommitted (tracked) changes are
       # sitting on main in the primary checkout, stash them aside — main is a
@@ -102,20 +105,29 @@ if typeset -f wt >/dev/null; then
         git stash push --quiet -m "impl-autostash-$1" \
           && echo "wt: primary main was dirty — stashed tracked changes to 'impl-autostash-$1' (restore: git stash pop)" >&2
       fi
-      local branch="feat/$1-auto"
+      local branch="feat/$1"
       local prompt="${2:-implement $1}"
-      # Drive the story to done inside a Ralph loop rather than a single pass:
-      # implement, then run /pr (the gated exit), and only emit the completion
-      # promise once /pr succeeds. Hard cap at 15 iterations so a promise that
-      # never fires can't loop forever.
-      local ralph_cmd="/ralph-loop:ralph-loop \"$prompt, then run /pr (the gated exit); emit <promise>STORY COMPLETE</promise> only once /pr succeeds and the PR is marked ready.\" --completion-promise \"STORY COMPLETE\" --max-iterations 15"
-      # If a worktree for the branch already exists, cd straight into it and
-      # launch Claude there; otherwise let worktrunk create it (`switch --create`).
+      # Two phases in one goal: (1) implement → /pr inside the Ralph loop
+      # (implementation is iterative), then (2) once the PR is READY, shepherd it to
+      # merge with /shepherd-pr — an event-driven, ~zero-cost watch that fixes
+      # CI/conflicts in-session and runs /post-merge on merge.
+      # The Ralph supervisor IS the loop — no /ralph-loop slash command needed.
+      # verify.command (pnpm test:gate) is the authoritative stop condition.
+      local ralph_cmd="Implement story #$1 and then shepherd its PR to merged. Phase 1: $prompt. Once implementation passes the gate (pnpm test:gate), run the /pr skill (the gated exit — commit, push, create/ready the PR). Phase 2: once the PR is ready, run the /shepherd-pr skill to drive it to merged (fixes CI failures and rebases on conflicts in-session, runs /post-merge on merge)."
+      # pi runs interactively with the task as its initial message. The assistant
+      # can start a Ralph loop via ralph_start when the task warrants iterative
+      # development (verify.command = pnpm test:gate is the stop condition).
+      # Adopt a worktree already cut for this ISSUE NUMBER. groom freezes the story's
+      # `.feature` on `feat/<n>-<slug>` (and epic-start uses the same `<type>/<n>-<slug>`),
+      # so match ANY `<type>/<n>`-family worktree by number — `<n>-<slug>` (groomed) OR a
+      # bare `<n>` (the fallback below) — and cd into it, inheriting the frozen `.feature`
+      # when present, instead of fresh-cutting and dropping the spec.
+      # No match ⇒ create the bare `feat/<n>` fallback below (an ungroomed story).
       local wt_path
       wt_path=$(git -C ~/Development/Monorepo worktree list --porcelain 2>/dev/null \
-        | awk -v b="refs/heads/$branch" '/^worktree /{p=$2} $0=="branch "b{print p; exit}')
+        | awk -v n="$1" '/^worktree /{p=$2} /^branch refs\/heads\//{b=$2; sub("refs/heads/[^/]+/","",b); if (b ~ ("^" n "($|-)")) {print p; exit}}')
       if [[ -n "$wt_path" ]]; then
-        echo "wt: worktree for $branch already exists — launching Claude in $wt_path" >&2
+        echo "wt: found worktree for #$1 — launching pi in $wt_path" >&2
         builtin cd "$wt_path" || return
         # wt's `freshen` pre-start hook only rebases at CREATION, so a long-lived
         # worktree silently drifts as origin/main moves on. Re-freshen here too, but
@@ -138,10 +150,9 @@ if typeset -f wt >/dev/null; then
             echo "wt: ⚠ couldn't fast-forward $branch (uncommitted changes) — commit/stash, then 'git merge --ff-only origin/main'" >&2
           fi
         fi
-        claude --permission-mode bypassPermissions "$ralph_cmd"
+        pi --model openrouter/z-ai/glm-5.2 "$ralph_cmd"
       else
-        _wt_orig switch --create "$branch" -x claude -- \
-          --permission-mode bypassPermissions "$ralph_cmd"
+        _wt_orig switch --create "$branch" -x pi -- --model openrouter/z-ai/glm-5.2 "$ralph_cmd"
       fi
     else
       _wt_orig "$@"
@@ -149,7 +160,8 @@ if typeset -f wt >/dev/null; then
   }
 
   # `impl <story-number> [prompt]` — dedicated alias for the `wt <n>` story flow:
-  # create the feat/<n>-auto worktree and launch Claude in auto-accept-edits mode.
+  # create the feat/<n> worktree and launch pi with the story as its initial
+  # message (assistant may start a Ralph loop for iterative implementation).
   impl() {
     if [[ ( $# -eq 1 || $# -eq 2 ) && "$1" == <-> ]]; then
       wt "$@"
