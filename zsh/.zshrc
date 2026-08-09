@@ -85,98 +85,81 @@ if command -v wt &>/dev/null; then
   eval "$(command wt config shell init zsh)"
 fi
 
-# `wt <story-number>` shortcut: cd into the monorepo primary checkout, create the
-# feat/<n> worktree, and launch opencode in non-interactive mode against the
-# Ralph RLM supervisor agent to implement the story. Any other `wt ...` invocation
-# passes straight through to worktrunk's real function untouched.
-if typeset -f wt >/dev/null; then
-  functions[_wt_orig]=$functions[wt]
-  wt() {
-    if [[ ( $# -eq 1 || $# -eq 2 ) && "$1" == <-> ]]; then
-      # Rename the Ghostty tab to the story number so it's identifiable at a glance.
-      printf '\033]2;wt %s\007' "$1"
-      builtin cd ~/Development/Monorepo || return
-      # Start from a pristine main: if stray uncommitted (tracked) changes are
-      # sitting on main in the primary checkout, stash them aside — main is a
-      # place you should never be editing. Nothing is lost (git stash pop to
-      # restore); the precmd nag would have been flagging them already.
-      if [[ "$(git symbolic-ref --quiet --short HEAD 2>/dev/null)" == "main" ]] \
-         && ! git diff --quiet HEAD 2>/dev/null; then
-        git stash push --quiet -m "impl-autostash-$1" \
-          && echo "wt: primary main was dirty — stashed tracked changes to 'impl-autostash-$1' (restore: git stash pop)" >&2
-      fi
-      local branch="feat/$1"
-      local prompt="${2:-implement $1}"
-      # Two phases in one goal: (1) implement → /pr inside the Ralph loop
-      # (implementation is iterative), then (2) once the PR is READY, shepherd it to
-      # merge with /shepherd-pr — an event-driven, ~zero-cost watch that fixes
-      # CI/conflicts in-session and runs /post-merge on merge.
-      # The Ralph supervisor IS the loop — no /ralph-loop slash command needed.
-      # verify.command (pnpm test:gate) is the authoritative stop condition.
-      local ralph_cmd="Implement story #$1 and then shepherd its PR to merged. Phase 1: $prompt. Once implementation passes the gate (pnpm test:gate), run the /pr skill (the gated exit — commit, push, create/ready the PR). Phase 2: once the PR is ready, run the /shepherd-pr skill to drive it to merged (fixes CI failures and rebases on conflicts in-session, runs /post-merge on merge)."
-      # pi runs interactively with the task as its initial message. The assistant
-      # can start a Ralph loop via ralph_start when the task warrants iterative
-      # development (verify.command = pnpm test:gate is the stop condition).
-      # Adopt a worktree already cut for this ISSUE NUMBER. groom freezes the story's
-      # `.feature` on `feat/<n>-<slug>` (and epic-start uses the same `<type>/<n>-<slug>`),
-      # so match ANY `<type>/<n>`-family worktree by number — `<n>-<slug>` (groomed) OR a
-      # bare `<n>` (the fallback below) — and cd into it, inheriting the frozen `.feature`
-      # when present, instead of fresh-cutting and dropping the spec.
-      # No match ⇒ create the bare `feat/<n>` fallback below (an ungroomed story).
-      local wt_path
-      wt_path=$(git -C ~/Development/Monorepo worktree list --porcelain 2>/dev/null \
-        | awk -v n="$1" '/^worktree /{p=$2} /^branch refs\/heads\//{b=$2; sub("refs/heads/[^/]+/","",b); if (b ~ ("^" n "($|-)")) {print p; exit}}')
-      if [[ -n "$wt_path" ]]; then
-        echo "wt: found worktree for #$1 — launching pi in $wt_path" >&2
-        builtin cd "$wt_path" || return
-        # wt's `freshen` pre-start hook only rebases at CREATION, so a long-lived
-        # worktree silently drifts as origin/main moves on. Re-freshen here too, but
-        # FAST-FORWARD ONLY — advance the branch only when it has no commits of its
-        # own ahead of origin/main. The moment the branch carries unmerged work,
-        # catching up means a rebase that rewrites YOUR commits (and, if pushed, a
-        # force-push), so we never touch it — just warn and let you rebase yourself.
-        # A fast-forward needs no rewrite and no force-push; it also refuses (touches
-        # nothing) if uncommitted changes would be clobbered.
-        git fetch origin main --quiet 2>/dev/null
-        local behind ahead
-        behind=$(git rev-list --count HEAD..origin/main 2>/dev/null)
-        ahead=$(git rev-list --count origin/main..HEAD 2>/dev/null)
-        if [[ "$behind" -gt 0 ]]; then
-          if [[ "$ahead" -gt 0 ]]; then
-            echo "wt: ⚠ $branch is $behind behind / $ahead ahead of origin/main (unmerged work) — run 'git rebase origin/main' yourself to freshen" >&2
-          elif git merge --ff-only origin/main --quiet; then
-            echo "wt: fast-forwarded $branch to origin/main ($behind commit(s))" >&2
-          else
-            echo "wt: ⚠ couldn't fast-forward $branch (uncommitted changes) — commit/stash, then 'git merge --ff-only origin/main'" >&2
-          fi
-        fi
-        pi --model openrouter/z-ai/glm-5.2 "$ralph_cmd"
-      else
-        _wt_orig switch --create "$branch" -x pi -- --model openrouter/z-ai/glm-5.2 "$ralph_cmd"
-      fi
-    else
-      _wt_orig "$@"
-    fi
-  }
+# `story <n>` and `epic <n>` — drive the `orchestrate-issue` Pi workflow for a
+# single story or a whole epic. Both cd into the monorepo primary checkout, stash
+# any dirty main aside (main stays pristine), and launch an interactive Pi session
+# whose first message is the `/orchestrate-issue issueNumber=<n>` slash command. The
+# workflow runs in the background inside the session and posts its report when it
+# finishes — it IS the single implementation pipeline (groom → dev-loop-story →
+# in-loop pr-shepherd → post-merge), so these are thin entrypoints, not a parallel
+# implementation path. Model: no pin — both ride Pi's default (ollama-cloud glm-5.2),
+# keeping dev-loop-story's medium→big tier escalation intact; override per-run via
+# the global default (settings.json), not a flag here. `wt` is left as worktrunk's
+# real command — the story-number interception that used to live there moved here.
 
-  # `impl <story-number> [prompt]` — dedicated alias for the `wt <n>` story flow:
-  # create the feat/<n> worktree and launch pi with the story as its initial
-  # message (assistant may start a Ralph loop for iterative implementation).
-  impl() {
-    if [[ ( $# -eq 1 || $# -eq 2 ) && "$1" == <-> ]]; then
-      wt "$@"
-    else
-      echo "usage: impl <story-number> [prompt]" >&2
-      return 2
+story() {
+  if [[ $# -ne 1 || "$1" != <-> ]]; then
+    echo "usage: story <story-number>" >&2
+    return 2
+  fi
+  printf '\033]2;story %s\007' "$1"
+  builtin cd ~/Development/Monorepo || return
+  # Keep main pristine: stash stray tracked changes on main aside.
+  if [[ "$(git symbolic-ref --quiet --short HEAD 2>/dev/null)" == "main" ]] \
+     && ! git diff --quiet HEAD 2>/dev/null; then
+    git stash push --quiet -m "story-autostash-$1" \
+      && echo "story: primary main was dirty — stashed to 'story-autostash-$1' (restore: git stash pop)" >&2
+  fi
+  # Adopt an existing <type>/<n>-family worktree (groomed <n>-<slug> OR bare <n>)
+  # and fast-forward it to origin/main before handing off — orchestrate-issue
+  # reuses a worktree as-is but does NOT freshen it, so this stops a long-lived
+  # groomed worktree drifting behind main. No worktree yet ⇒ orchestrate-issue
+  # grooms and creates one itself.
+  local wt_path
+  wt_path=$(git -C ~/Development/Monorepo worktree list --porcelain 2>/dev/null \
+    | awk -v n="$1" '/^worktree /{p=$2} /^branch refs\/heads\//{b=$2; sub("refs/heads/[^/]+/","",b); if (b ~ ("^" n "($|-)")) {print p; exit}}')
+  if [[ -n "$wt_path" ]]; then
+    echo "story: found worktree for #$1 — freshening $wt_path" >&2
+    builtin cd "$wt_path" || return
+    git fetch origin main --quiet 2>/dev/null
+    local behind ahead
+    behind=$(git rev-list --count HEAD..origin/main 2>/dev/null)
+    ahead=$(git rev-list --count origin/main..HEAD 2>/dev/null)
+    if [[ "$behind" -gt 0 ]]; then
+      if [[ "$ahead" -gt 0 ]]; then
+        echo "story: ⚠ #$1 is $behind behind / $ahead ahead of origin/main (unmerged work) — 'git rebase origin/main' yourself" >&2
+      elif git merge --ff-only origin/main --quiet; then
+        echo "story: fast-forwarded #$1 to origin/main ($behind commit(s))" >&2
+      else
+        echo "story: ⚠ couldn't fast-forward #$1 (uncommitted changes) — commit/stash, then 'git merge --ff-only origin/main'" >&2
+      fi
     fi
-  }
-fi
+  else
+    echo "story: no worktree for #$1 yet — orchestrate-issue will groom + create one" >&2
+  fi
+  pi "/orchestrate-issue issueNumber=$1"
+}
+
+epic() {
+  if [[ $# -ne 1 || "$1" != <-> ]]; then
+    echo "usage: epic <epic-number>" >&2
+    return 2
+  fi
+  printf '\033]2;epic %s\007' "$1"
+  builtin cd ~/Development/Monorepo || return
+  if [[ "$(git symbolic-ref --quiet --short HEAD 2>/dev/null)" == "main" ]] \
+     && ! git diff --quiet HEAD 2>/dev/null; then
+    git stash push --quiet -m "epic-autostash-$1" \
+      && echo "epic: primary main was dirty — stashed to 'epic-autostash-$1' (restore: git stash pop)" >&2
+  fi
+  pi "/orchestrate-issue issueNumber=$1"
+}
 
 # Nag whenever the PRIMARY Monorepo checkout is on `main` with a dirty tree — main
 # is the shared HEAD every root pane sees and should stay pristine, so catch stray
 # uncommitted edits before they compound. Cheap: bail unless PWD is inside the
 # primary path, then one `git rev-parse` to exclude the linked worktrees that live
-# under it (they're never on `main`). `impl`/`wt` auto-stashes these when it starts
+# under it (they're never on `main`). `story`/`epic` auto-stashes these when it starts
 # a story; this is the continuous reminder in between.
 _monorepo_main_dirty_warn() {
   [[ "$PWD" == ~/Development/Monorepo || "$PWD" == ~/Development/Monorepo/* ]] || return
