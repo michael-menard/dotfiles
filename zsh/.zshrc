@@ -132,10 +132,41 @@ epic() {
   fi
   printf '\033]2;epic %s\007' "$1"
   builtin cd ~/Development/Monorepo || return
+  # Keep main pristine: stash stray tracked changes on main aside.
   if [[ "$(git symbolic-ref --quiet --short HEAD 2>/dev/null)" == "main" ]] \
      && ! git diff --quiet HEAD 2>/dev/null; then
     git stash push --quiet -m "epic-autostash-$1" \
       && echo "epic: primary main was dirty — stashed to 'epic-autostash-$1' (restore: git stash pop)" >&2
+  fi
+  # Symmetric adoption: launch from an isolated worktree, never the primary.
+  # Prefer the first Ready story's worktree; else create an epic launch-surface
+  # worktree (chore/<epic>-orchestrator) that orchestrate-issue removes in its
+  # Report phase. Fail-closed if neither resolves — no --force escape hatch.
+  local first_ready wt_path
+  first_ready=$(gh api repos/CodeFika/monorepo/issues/$1/sub_issues \
+    --paginate \
+    --jq '.[] | select(.state=="open") | .number' 2>/dev/null \
+    | while read -r n; do
+        node .github/scripts/board.cjs status "$n" --json 2>/dev/null \
+          | jq -r --arg n "$n" 'select(.data[].status=="ready") | $n' 2>/dev/null
+      done | head -1)
+  if [[ -n "$first_ready" ]]; then
+    wt_path=$(node .github/scripts/epic-start.cjs prepare "$first_ready" --json \
+      2>/dev/null | jq -r .worktreePath)
+    echo "epic: first Ready story #$first_ready — adopting its worktree" >&2
+  else
+    wt_path=$(node .github/scripts/epic-start.cjs start --epic "$1" --json \
+      2>/dev/null | jq -r .worktreePath)
+    echo "epic: no Ready stories yet — created epic launch-surface worktree (chore/$1-orchestrator)" >&2
+  fi
+  if [[ -n "$wt_path" && "$wt_path" != "null" ]]; then
+    builtin cd "$wt_path" || return
+    echo "epic: worktree for #$1 → $wt_path" >&2
+  else
+    echo "epic: ⚠ could not resolve any worktree for #$1 (epic-start failed)." >&2
+    echo "      Aborting; main left pristine. To override, run:" >&2
+    echo "        pi \"/orchestrate-issue issueNumber=$1\"" >&2
+    return 1
   fi
   pi "/orchestrate-issue issueNumber=$1"
 }
