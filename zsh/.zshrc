@@ -110,32 +110,17 @@ story() {
     git stash push --quiet -m "story-autostash-$1" \
       && echo "story: primary main was dirty — stashed to 'story-autostash-$1' (restore: git stash pop)" >&2
   fi
-  # Adopt an existing <type>/<n>-family worktree (groomed <n>-<slug> OR bare <n>)
-  # and fast-forward it to origin/main before handing off — orchestrate-issue
-  # reuses a worktree as-is but does NOT freshen it, so this stops a long-lived
-  # groomed worktree drifting behind main. No worktree yet ⇒ orchestrate-issue
-  # grooms and creates one itself.
+  # Resolve-or-create the story worktree via the single writer. epic-start prepare
+  # now owns create + best-effort freshen to origin/main (no inline awk/ff-only here).
   local wt_path
-  wt_path=$(git -C ~/Development/Monorepo worktree list --porcelain 2>/dev/null \
-    | awk -v n="$1" '/^worktree /{p=$2} /^branch refs\/heads\//{b=$2; sub("refs/heads/[^/]+/","",b); if (b ~ ("^" n "($|-)")) {print p; exit}}')
-  if [[ -n "$wt_path" ]]; then
-    echo "story: found worktree for #$1 — freshening $wt_path" >&2
+  wt_path=$(node .github/scripts/epic-start.cjs prepare "$1" --json 2>/dev/null \
+    | jq -r .worktreePath)
+  if [[ -n "$wt_path" && "$wt_path" != "null" ]]; then
     builtin cd "$wt_path" || return
-    git fetch origin main --quiet 2>/dev/null
-    local behind ahead
-    behind=$(git rev-list --count HEAD..origin/main 2>/dev/null)
-    ahead=$(git rev-list --count origin/main..HEAD 2>/dev/null)
-    if [[ "$behind" -gt 0 ]]; then
-      if [[ "$ahead" -gt 0 ]]; then
-        echo "story: ⚠ #$1 is $behind behind / $ahead ahead of origin/main (unmerged work) — 'git rebase origin/main' yourself" >&2
-      elif git merge --ff-only origin/main --quiet; then
-        echo "story: fast-forwarded #$1 to origin/main ($behind commit(s))" >&2
-      else
-        echo "story: ⚠ couldn't fast-forward #$1 (uncommitted changes) — commit/stash, then 'git merge --ff-only origin/main'" >&2
-      fi
-    fi
+    echo "story: worktree for #$1 → $wt_path" >&2
   else
-    echo "story: no worktree for #$1 yet — orchestrate-issue will groom + create one" >&2
+    echo "story: ⚠ could not resolve a worktree for #$1 — epic-start prepare failed (see above). Aborting; main left pristine." >&2
+    return 1
   fi
   pi "/orchestrate-issue issueNumber=$1"
 }
